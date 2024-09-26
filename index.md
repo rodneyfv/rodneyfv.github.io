@@ -1,11 +1,11 @@
 ---
 layout: default
 ---
-
+ 
 
 # Rodney Fonseca
 
-![Branching](rodney_photo_crop.jpg)
+<img src="rodney_photo_crop.jpg" style="width:256px;height:256px;">
 
 
 ## Bio
@@ -27,6 +27,7 @@ Instituto de Matemática e Estatística<br>
 Sala: 245
 
 Email: -
+
 
 ## Áreas de pesquisa
 
