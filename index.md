@@ -5,7 +5,7 @@ layout: default
 
 # Rodney Fonseca
 
-![rodney_photo_crop](rodney_photo_crop.jpg {width=256px height=256px})
+![rodney_photo_crop](rodney_photo_crop.jpg){width=256px height=256px}
 
 
 ## Bio
