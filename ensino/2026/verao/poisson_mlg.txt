@@ -1,0 +1,165 @@
+library(glmnet)
+library(xtable)
+
+set.seed(2025)
+
+
+# Modelo log-linear Poisson
+n = 500
+p = 20
+x = matrix(rnorm(n * p), n, p)
+suporte = c(1:5)
+p0 = length(suporte)
+
+beta = c(-1, 0.5, -2, 1.5, 1)
+eta = x[, suporte] %*% beta
+mu = exp(eta)
+y = rpois(n, mu)
+
+
+
+###################################
+# ajuste do lasso
+lasso_fit <- glmnet::glmnet(x, y, family = 'poisson', intercept = TRUE,
+                            alpha = 1)
+
+ # png(file="poisson_lasso_path.png", 
+ #     width=600, height=500, res = 100)
+plot(lasso_fit, xvar = 'lambda', sign.lambda = 1, 
+     lwd=2, ylab='Coeficientes')
+ # dev.off()
+
+# validação cruzada para escolher lambda
+cv_lasso_fit <- glmnet::cv.glmnet(x, y, family = 'poisson', intercept = TRUE,
+                                  alpha = 1, type.measure = 'deviance', nfolds = 10) 
+
+ # png(file="poisson_lasso_deviance_cv.png", 
+ #     width=600, height=500, res = 100)
+plot(cv_lasso_fit, sign.lambda = 1)
+ # dev.off()
+
+# coeficientes estimados usando o lambda 'ótimo'
+cv_lasso_fit$lambda.min
+id_labda_min <- which(lasso_fit$lambda == cv_lasso_fit$lambda.min)
+beta_hat_lasso <- coef(lasso_fit, s=lasso_fit$lambda[id_labda_min])
+beta_hat_lasso
+
+# valores ajustados
+fitted_eta_values <- beta_hat_lasso[1] + x%*%beta_hat_lasso[-1]
+fitted_values <- exp(fitted_eta_values)
+plot(fitted_values, y)
+
+# deviance
+dev_lambda <- 0
+for(i in 1:n){
+  if(y[i]==0)
+    dev_lambda <- dev_lambda + 2*fitted_values[i] 
+  else
+    dev_lambda <- dev_lambda + 
+      2*sum(y[i]*log(y[i]/fitted_values[i]) - (y[i] - fitted_values[i]) )
+}
+dev_lambda
+# fração da deviance explicada nos dados de treino
+dev_null <- 0
+for(i in 1:n){
+  if(y[i]==0)
+    dev_null <- dev_null + 2*mean(y)
+  else
+    dev_null <- dev_null + 
+      2*sum(y[i]*log(y[i]/mean(y)) - (y[i] - mean(y) ) )
+}
+dev_null
+1 - dev_lambda/dev_null
+
+lasso_fit$nulldev # sanity check
+lasso_fit$dev.ratio[id_labda_min]
+
+
+# estimativas
+
+beta_true <- c(0, beta, rep(0, p-p0))
+vies_beta_hat <- beta_hat_lasso - beta_true
+
+# png(file="poisson_estimativas_lasso.png", 
+#     width=600, height=500, res = 100)
+par(mar = c(4,4,1,1), mgp = c(2.5, 1, 0))
+plot(0:p, beta_true, type = 'h', lwd=2, ylab = expression(beta[i]), 
+     xlab = 'i', cex.lab=1.5)
+points(0:p, beta_hat_lasso, pch='o', col='Green', cex=2)
+legend("topright", c('Valor real', 'Estimativa'),
+       pch = c('|', 'o'), col = c("black", "Green"), cex=1.2)
+# dev.off()
+
+# exemplo com o MLG usual
+summary(glm(y ~ 1 + x, family = 'poisson'))
+
+
+###################################################
+# Caso com offset
+
+# Poisson
+n = 500
+p = 20
+x = matrix(rnorm(n * p), n, p)
+suporte = c(1:5)
+p0 = length(suporte)
+
+beta = c(-1, 0.5, -2, 1.5, 1)
+eta = x[, suporte] %*% beta
+mu = exp(eta)
+tempo = rgamma(n, 10, 1)
+hist(tempo)
+
+y = rpois(n, tempo*mu)
+
+
+# validação cruzada para escolher lambda
+cv_lasso_fit_comoffset <- glmnet::cv.glmnet(x, y, family = 'poisson', intercept = TRUE,
+                                  alpha = 1, type.measure = 'deviance', 
+                                  nfolds = 10, offset = log(tempo)) 
+
+cv_lasso_fit_semoffset <- glmnet::cv.glmnet(x, y, family = 'poisson', intercept = TRUE,
+                                            alpha = 1, type.measure = 'deviance', 
+                                            nfolds = 10) 
+
+beta_hat_lasso_comoffset <- coef(cv_lasso_fit_comoffset$glmnet.fit, 
+                                 s=cv_lasso_fit_comoffset$lambda.min)
+beta_hat_lasso_semoffset <- coef(cv_lasso_fit_semoffset$glmnet.fit, 
+                                 s=cv_lasso_fit_semoffset$lambda.min)
+# valor verdadeiro dos parâmetros
+beta_true <- c(0, beta, rep(0, p-p0))
+
+# png(file="poisson_estimativas_offset.png", 
+#     width=600, height=500, res = 100)
+par(mar = c(5,4,1,1), mgp = c(2.5, 1, 0))
+plot(0:p, beta_true, type = 'h', ylim=c(-2,3), lwd=2, ylab = expression(beta[i]), 
+     xlab = 'i', cex.lab=1.5)
+points(0:p, beta_hat_lasso_comoffset, pch='o', col='green', cex=2)
+points(0:p, beta_hat_lasso_semoffset, pch='*', col='red', cex=2)
+legend("topright", c('Valor real', 
+                     expression(paste(hat(beta)[i], ' com offset')),
+                     expression(paste(hat(beta)[i], ' sem offset'))),
+       pch = c('|', 'o', '*'), col = c("black", "green", 'red'), cex=1.2)
+
+sum((beta_hat_lasso_comoffset - beta_true)^2)
+sum((beta_hat_lasso_semoffset - beta_true)^2)
+# dev.off()
+
+# resultados com offset
+id_labda_min_comoffset <- which(cv_lasso_fit_comoffset$glmnet.fit$lambda == 
+                                  cv_lasso_fit_comoffset$lambda.min)
+paste('lambda: ', cv_lasso_fit_comoffset$glmnet.fit$a0[id_labda_min_comoffset])
+cv_lasso_fit_comoffset$glmnet.fit$beta[1:5, id_labda_min_comoffset]
+paste('deviance: ', cv_lasso_fit_comoffset$glmnet.fit$dev.ratio[id_labda_min_comoffset])
+paste('df: ', cv_lasso_fit_comoffset$glmnet.fit$df[id_labda_min_comoffset])
+
+# resultados sem offset
+id_labda_min_semoffset <- which(cv_lasso_fit_semoffset$glmnet.fit$lambda == 
+                                  cv_lasso_fit_semoffset$lambda.min)
+paste('lambda: ', cv_lasso_fit_semoffset$glmnet.fit$a0[id_labda_min_semoffset])
+cv_lasso_fit_semoffset$glmnet.fit$beta[1:5, id_labda_min_semoffset]
+paste('deviance: ', cv_lasso_fit_semoffset$glmnet.fit$dev.ratio[id_labda_min_semoffset])
+paste('df: ', cv_lasso_fit_semoffset$glmnet.fit$df[id_labda_min_semoffset])
+
+round(cbind(cv_lasso_fit_comoffset$glmnet.fit$beta[1:5, id_labda_min_comoffset],
+        cv_lasso_fit_semoffset$glmnet.fit$beta[1:5, id_labda_min_semoffset]), 4)
