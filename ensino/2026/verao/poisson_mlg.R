@@ -1,3 +1,4 @@
+rm(list = ls())
 library(glmnet)
 library(xtable)
 
@@ -23,20 +24,20 @@ y = rpois(n, mu)
 lasso_fit <- glmnet::glmnet(x, y, family = 'poisson', intercept = TRUE,
                             alpha = 1)
 
- # png(file="poisson_lasso_path.png", 
- #     width=600, height=500, res = 100)
+# png(file="poisson_lasso_path.png", 
+#     width=600, height=500, res = 100)
 plot(lasso_fit, xvar = 'lambda', sign.lambda = 1, 
      lwd=2, ylab='Coeficientes')
- # dev.off()
+# dev.off()
 
 # validação cruzada para escolher lambda
 cv_lasso_fit <- glmnet::cv.glmnet(x, y, family = 'poisson', intercept = TRUE,
                                   alpha = 1, type.measure = 'deviance', nfolds = 10) 
 
- # png(file="poisson_lasso_deviance_cv.png", 
- #     width=600, height=500, res = 100)
+# png(file="poisson_lasso_deviance_cv.png", 
+#     width=600, height=500, res = 100)
 plot(cv_lasso_fit, sign.lambda = 1)
- # dev.off()
+# dev.off()
 
 # coeficientes estimados usando o lambda 'ótimo'
 cv_lasso_fit$lambda.min
@@ -115,8 +116,8 @@ y = rpois(n, tempo*mu)
 
 # validação cruzada para escolher lambda
 cv_lasso_fit_comoffset <- glmnet::cv.glmnet(x, y, family = 'poisson', intercept = TRUE,
-                                  alpha = 1, type.measure = 'deviance', 
-                                  nfolds = 10, offset = log(tempo)) 
+                                            alpha = 1, type.measure = 'deviance', 
+                                            nfolds = 10, offset = log(tempo)) 
 
 cv_lasso_fit_semoffset <- glmnet::cv.glmnet(x, y, family = 'poisson', intercept = TRUE,
                                             alpha = 1, type.measure = 'deviance', 
@@ -151,7 +152,6 @@ id_labda_min_comoffset <- which(cv_lasso_fit_comoffset$glmnet.fit$lambda ==
 paste('lambda: ', cv_lasso_fit_comoffset$glmnet.fit$a0[id_labda_min_comoffset])
 cv_lasso_fit_comoffset$glmnet.fit$beta[1:5, id_labda_min_comoffset]
 paste('deviance: ', cv_lasso_fit_comoffset$glmnet.fit$dev.ratio[id_labda_min_comoffset])
-paste('df: ', cv_lasso_fit_comoffset$glmnet.fit$df[id_labda_min_comoffset])
 
 # resultados sem offset
 id_labda_min_semoffset <- which(cv_lasso_fit_semoffset$glmnet.fit$lambda == 
@@ -159,7 +159,7 @@ id_labda_min_semoffset <- which(cv_lasso_fit_semoffset$glmnet.fit$lambda ==
 paste('lambda: ', cv_lasso_fit_semoffset$glmnet.fit$a0[id_labda_min_semoffset])
 cv_lasso_fit_semoffset$glmnet.fit$beta[1:5, id_labda_min_semoffset]
 paste('deviance: ', cv_lasso_fit_semoffset$glmnet.fit$dev.ratio[id_labda_min_semoffset])
-paste('df: ', cv_lasso_fit_semoffset$glmnet.fit$df[id_labda_min_semoffset])
 
-round(cbind(cv_lasso_fit_comoffset$glmnet.fit$beta[1:5, id_labda_min_comoffset],
-        cv_lasso_fit_semoffset$glmnet.fit$beta[1:5, id_labda_min_semoffset]), 4)
+round(cbind(beta,
+            cv_lasso_fit_comoffset$glmnet.fit$beta[1:5, id_labda_min_comoffset],
+            cv_lasso_fit_semoffset$glmnet.fit$beta[1:5, id_labda_min_semoffset]), 4)
