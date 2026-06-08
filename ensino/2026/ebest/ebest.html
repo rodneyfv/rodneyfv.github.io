@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>X EBEST - minicurso</title>
+    <link rel="stylesheet" href="styles.css"> <!-- Optional: Link to your CSS file -->
+</head>
+<body>
+    <header>
+        <h1>X Encontro Baiano de Estatística (<a href="https://ebest.sei.ba.gov.br/2026/">EBEST</a>)</h1>
+        <br>
+        <h2>Introdução à inferência estatística em alta dimensão</h2>
+        <nav>
+            <a href="../../../index.html">Página Inicial</a> <!-- Link back to your homepage -->
+        </nav>
+    </header>
+    
+    <main>
+        <section>
+            <h2>Descrição</h2>
+            <p>
+              Vários conjuntos de dados modernos possuem a alta dimensionalidade como característica principal. Do ponto de vista prático, podemos ter um grande número de variáveis/preditores disponíveis para explicar algum fenômeno de interesse, mas não sabermos ao certo quais variáveis são de fato as mais importantes. A chave para analisar dados nesse cenário é a suposição de esparsidade, ou seja, de que a dimensão intrínseca do processo gerador de tais dados é baixa em comparação com a dimensionalidade observada. Problemas desse tipo levaram a uma crescente investigação e desenvolvimento de métodos estatísticos para modelos esparsos nos últimos anos. O objetivo deste minicurso é introduzir os alunos à área de estatística em alta dimensão e apresentar modelos esparsos que podem ser utilizados para realizar inferência estatística neste cenário. Focando no modelo lasso para regressão linear esparsa, os alunos serão apresentados a métodos de inferências via intervalos de confiança e teste de hipóteses nesse cenário. As metodologias discutidas serão ilustradas com exemplos no software R e banco de dados reais.
+            </p> 
+        </section>
+
+        <section>
+            <h3>Parte 1</h3> 
+              <b>Tema/título:</b> Estatística em alta dimensão<br>
+              <b>Conteúdo:</b> Alta dimensionalidade e o conceito de esparsidade, Lasso para modelos lineares<br>
+              <a href="modelagem_altadim.pdf">Slides</a><br>
+
+            <h3>Parte 2</h3> 
+              <b>Tema/título:</b> Inferência em alta dimensão<br>
+              <b>Conteúdo:</b> Lasso com bootstrap, inferência via lasso deviesado<br>
+              <a href="inferencia_lasso.pdf">Slides</a><br>
+
+        </section>
+
+
+        <section>
+            <h2>Exemplos em R</h2>    
+                <a href="crime_data.zip">Exemplo com dados de crimes (Lasso para modelo linear e validação cruzada)</a><br>
+                <a href="diabetes.zip">Exemplo com dados de diabetes (Lasso com boostrap e lasso deviesado)</a><br>                
+        </section>
+
+    </main>
+ 
+</body>
+</html>
